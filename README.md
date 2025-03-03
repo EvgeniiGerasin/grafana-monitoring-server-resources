@@ -40,20 +40,20 @@ The script uses the following versions of the monitoring tools:
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/your-repo/monitoring-setup.git
+git clone https://github.com/EvgeniiGerasin/grafana-monitoring-server-resources.git
 cd monitoring-setup
 ```
 
 ### 2. Make the Script Executable
 
 ```bash
-chmod +x monitoring_setup.sh
+chmod +x setup.sh
 ```
 
 ### 3. Run the Script
 
 ```bash
-./monitoring_setup.sh
+./setup.sh
 ```
 
 ---
@@ -73,7 +73,7 @@ When you run the script, you will be presented with the following options:
 ### 1. Installation
 
 ```bash
-$ ./monitoring_setup.sh
+$ ./setup.sh
 Choose an action:
 1) Install
 2) Uninstall
@@ -96,7 +96,7 @@ Node Exporter is available at: http://localhost:9100/metrics
 ### 2. Uninstallation
 
 ```bash
-$ ./monitoring_setup.sh
+$ ./setup.sh
 Choose an action:
 1) Install
 2) Uninstall
@@ -116,7 +116,7 @@ All monitoring components have been removed!
 ### 3. Import Dashboards
 
 ```bash
-$ ./monitoring_setup.sh
+$ ./setup.sh
 Choose an action:
 1) Install
 2) Uninstall
