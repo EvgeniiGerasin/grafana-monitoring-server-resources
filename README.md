@@ -16,7 +16,7 @@ This script automates the installation, uninstallation, and dashboard import for
 
 ## Prerequisites
 
-- **Operating System**: Ubuntu/Debian (tested on Ubuntu 20.04).
+- **Operating System**: Ubuntu/Debian (tested on Ubuntu 20.04 and Debian 11).
 - **Dependencies**:
   - `wget`
   - `curl`
@@ -41,7 +41,7 @@ The script uses the following versions of the monitoring tools:
 
 ```bash
 git clone https://github.com/EvgeniiGerasin/grafana-monitoring-server-resources.git
-cd monitoring-setup
+cd grafana-monitoring-server-resources
 ```
 
 ### 2. Make the Script Executable
@@ -168,6 +168,15 @@ The script installs the following dependencies:
 - **Grafana**: Installed via the official Grafana APT repository.
 - **Prometheus**: Downloaded from the [Prometheus releases page](https://github.com/prometheus/prometheus/releases).
 - **Node Exporter**: Downloaded from the [Node Exporter releases page](https://github.com/prometheus/node_exporter/releases).
+
+---
+
+## Compatibility
+
+This script is compatible with the following Linux distributions:
+
+- **Ubuntu**: Tested on Ubuntu 20.04 LTS and Ubuntu 22.04 LTS.
+- **Debian**: Tested on Debian 11 (Bullseye).
 
 ---
 
