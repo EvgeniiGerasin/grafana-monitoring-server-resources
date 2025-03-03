@@ -30,8 +30,8 @@ This script automates the installation, uninstallation, and dashboard import for
 The script uses the following versions of the monitoring tools:
 
 - **Grafana**: Latest stable version (installed via APT repository).
-- **Prometheus**: `v2.30.3` (Linux AMD64).
-- **Node Exporter**: `v1.2.2` (Linux AMD64).
+- **Prometheus**: `v2.30.3`
+- **Node Exporter**: `v1.2.2`
 
 ---
 
