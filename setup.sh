@@ -30,33 +30,47 @@ check_node_exporter_installed() {
     fi
 }
 
+# Function to handle dpkg lock issue
+handle_dpkg_lock() {
+    if lsof /var/lib/dpkg/lock-frontend > /dev/null 2>&1 || lsof /var/lib/dpkg/lock > /dev/null 2>&1; then
+        echo "Another process is using the package system. Please wait or terminate it manually."
+        exit 1
+    fi
+}
+
 # Function to install Grafana, Prometheus, and Node Exporter
 install() {
-    # Check if Grafana is already installed
+    # Check for dpkg lock
+    handle_dpkg_lock
+
+    # Install Grafana
     if check_grafana_installed; then
         read -p "Grafana is already installed. Do you want to reinstall? (y/n): " REINSTALL_GRAFANA
         if [[ "$REINSTALL_GRAFANA" != "y" && "$REINSTALL_GRAFANA" != "Y" ]]; then
             echo "Skipping Grafana installation."
         else
             echo "Reinstalling Grafana..."
-            sudo apt-get remove -y --purge grafana
-            sudo apt-get install -y grafana
+            sudo apt remove -y --purge grafana
+            sudo apt install -y apt-transport-https software-properties-common wget
+            curl https://packages.grafana.com/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/grafana.gpg
+            echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list > /dev/null
+            sudo apt update
+            sudo apt install -y grafana
             sudo systemctl start grafana-server
             sudo systemctl enable grafana-server
         fi
     else
         echo "Installing Grafana..."
-        sudo apt-get install -y apt-transport-https
-        sudo apt-get install -y software-properties-common wget
-        wget -q -O - https://packages.grafana.com/gpg.key | sudo apt-key add -
-        echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee -a /etc/apt/sources.list.d/grafana.list
-        sudo apt-get update
-        sudo apt-get install -y grafana
+        sudo apt install -y apt-transport-https software-properties-common wget
+        curl https://packages.grafana.com/gpg.key | sudo gpg --dearmor -o /etc/apt/trusted.gpg.d/grafana.gpg
+        echo "deb https://packages.grafana.com/oss/deb stable main" | sudo tee /etc/apt/sources.list.d/grafana.list > /dev/null
+        sudo apt update
+        sudo apt install -y grafana
         sudo systemctl start grafana-server
         sudo systemctl enable grafana-server
     fi
 
-    # Check if Prometheus is already installed
+    # Install Prometheus
     if check_prometheus_installed; then
         read -p "Prometheus is already installed. Do you want to reinstall? (y/n): " REINSTALL_PROMETHEUS
         if [[ "$REINSTALL_PROMETHEUS" != "y" && "$REINSTALL_PROMETHEUS" != "Y" ]]; then
@@ -103,7 +117,7 @@ EOL
         sudo nohup /opt/prometheus/prometheus --config.file=/opt/prometheus/prometheus.yml > /opt/prometheus/prometheus.log 2>&1 &
     fi
 
-    # Check if Node Exporter is already installed
+    # Install Node Exporter
     if check_node_exporter_installed; then
         read -p "Node Exporter is already installed. Do you want to reinstall? (y/n): " REINSTALL_NODE_EXPORTER
         if [[ "$REINSTALL_NODE_EXPORTER" != "y" && "$REINSTALL_NODE_EXPORTER" != "Y" ]]; then
@@ -154,7 +168,7 @@ uninstall() {
     sudo pkill -f node_exporter
 
     echo "Removing Grafana..."
-    sudo apt-get remove -y --purge grafana
+    sudo apt remove -y --purge grafana
     sudo rm -rf /etc/grafana
     sudo rm -rf /var/lib/grafana
 
@@ -175,8 +189,8 @@ uninstall() {
     sudo rm -rf /var/log/node_exporter
 
     echo "Removing dependencies..."
-    sudo apt-get autoremove -y
-    sudo apt-get autoclean -y
+    sudo apt autoremove -y
+    sudo apt autoclean -y
 
     echo "All monitoring components have been removed!"
 }
