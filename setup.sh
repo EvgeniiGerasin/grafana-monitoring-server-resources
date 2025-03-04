@@ -12,7 +12,7 @@ check_grafana_installed() {
 
 # Function to check if Prometheus is installed
 check_prometheus_installed() {
-    if [[ -f /path/to/prometheus-2.30.3.linux-amd64/prometheus ]]; then
+    if [[ -f /opt/prometheus/prometheus ]]; then
         echo "Prometheus is already installed."
         return 0
     else
@@ -22,7 +22,7 @@ check_prometheus_installed() {
 
 # Function to check if Node Exporter is installed
 check_node_exporter_installed() {
-    if [[ -f /path/to/node_exporter-1.2.2.linux-amd64/node_exporter ]]; then
+    if [[ -f /opt/node_exporter/node_exporter ]]; then
         echo "Node Exporter is already installed."
         return 0
     else
@@ -63,13 +63,13 @@ install() {
             echo "Skipping Prometheus installation."
         else
             echo "Reinstalling Prometheus..."
-            rm -rf /path/to/prometheus-2.30.3.linux-amd64
+            sudo rm -rf /opt/prometheus
             wget https://github.com/prometheus/prometheus/releases/download/v2.30.3/prometheus-2.30.3.linux-amd64.tar.gz
             tar xvfz prometheus-2.30.3.linux-amd64.tar.gz
-            cd prometheus-2.30.3.linux-amd64
+            sudo mv prometheus-2.30.3.linux-amd64 /opt/prometheus
 
             echo "Configuring Prometheus..."
-            cat <<EOL > prometheus.yml
+            cat <<EOL | sudo tee /opt/prometheus/prometheus.yml > /dev/null
 global:
   scrape_interval: 15s
 
@@ -80,16 +80,16 @@ scrape_configs:
 EOL
 
             echo "Starting Prometheus..."
-            nohup ./prometheus --config.file=prometheus.yml > prometheus.log 2>&1 &
+            sudo nohup /opt/prometheus/prometheus --config.file=/opt/prometheus/prometheus.yml > /opt/prometheus/prometheus.log 2>&1 &
         fi
     else
         echo "Installing Prometheus..."
         wget https://github.com/prometheus/prometheus/releases/download/v2.30.3/prometheus-2.30.3.linux-amd64.tar.gz
         tar xvfz prometheus-2.30.3.linux-amd64.tar.gz
-        cd prometheus-2.30.3.linux-amd64
+        sudo mv prometheus-2.30.3.linux-amd64 /opt/prometheus
 
         echo "Configuring Prometheus..."
-        cat <<EOL > prometheus.yml
+        cat <<EOL | sudo tee /opt/prometheus/prometheus.yml > /dev/null
 global:
   scrape_interval: 15s
 
@@ -100,7 +100,7 @@ scrape_configs:
 EOL
 
         echo "Starting Prometheus..."
-        nohup ./prometheus --config.file=prometheus.yml > prometheus.log 2>&1 &
+        sudo nohup /opt/prometheus/prometheus --config.file=/opt/prometheus/prometheus.yml > /opt/prometheus/prometheus.log 2>&1 &
     fi
 
     # Check if Node Exporter is already installed
@@ -110,22 +110,22 @@ EOL
             echo "Skipping Node Exporter installation."
         else
             echo "Reinstalling Node Exporter..."
-            rm -rf /path/to/node_exporter-1.2.2.linux-amd64
+            sudo rm -rf /opt/node_exporter
             wget https://github.com/prometheus/node_exporter/releases/download/v1.2.2/node_exporter-1.2.2.linux-amd64.tar.gz
             tar xvfz node_exporter-1.2.2.linux-amd64.tar.gz
-            cd node_exporter-1.2.2.linux-amd64
+            sudo mv node_exporter-1.2.2.linux-amd64 /opt/node_exporter
 
             echo "Starting Node Exporter..."
-            nohup ./node_exporter > node_exporter.log 2>&1 &
+            sudo nohup /opt/node_exporter/node_exporter > /opt/node_exporter/node_exporter.log 2>&1 &
         fi
     else
         echo "Installing Node Exporter..."
         wget https://github.com/prometheus/node_exporter/releases/download/v1.2.2/node_exporter-1.2.2.linux-amd64.tar.gz
         tar xvfz node_exporter-1.2.2.linux-amd64.tar.gz
-        cd node_exporter-1.2.2.linux-amd64
+        sudo mv node_exporter-1.2.2.linux-amd64 /opt/node_exporter
 
         echo "Starting Node Exporter..."
-        nohup ./node_exporter > node_exporter.log 2>&1 &
+        sudo nohup /opt/node_exporter/node_exporter > /opt/node_exporter/node_exporter.log 2>&1 &
     fi
 
     echo "Configuring Grafana..."
@@ -150,10 +150,8 @@ uninstall() {
     echo "Stopping and removing services..."
     sudo systemctl stop grafana-server
     sudo systemctl disable grafana-server
-    sudo systemctl stop prometheus
-    sudo systemctl disable prometheus
-    sudo systemctl stop node_exporter
-    sudo systemctl disable node_exporter
+    sudo pkill -f prometheus
+    sudo pkill -f node_exporter
 
     echo "Removing Grafana..."
     sudo apt-get remove -y --purge grafana
@@ -161,12 +159,10 @@ uninstall() {
     sudo rm -rf /var/lib/grafana
 
     echo "Removing Prometheus..."
-    sudo rm -rf /path/to/prometheus-2.30.3.linux-amd64  # Update the path where Prometheus is installed
-    sudo rm -rf /etc/prometheus
-    sudo rm -rf /var/lib/prometheus
+    sudo rm -rf /opt/prometheus
 
     echo "Removing Node Exporter..."
-    sudo rm -rf /path/to/node_exporter-1.2.2.linux-amd64  # Update the path where Node Exporter is installed
+    sudo rm -rf /opt/node_exporter
 
     echo "Removing configuration files..."
     sudo rm -rf /etc/prometheus.yml
@@ -222,7 +218,7 @@ if [[ "$ACTION" == "1" ]]; then
     install
 elif [[ "$ACTION" == "2" ]]; then
     # Check if monitoring components are installed
-    if [[ -f /etc/grafana/grafana.ini || -f /path/to/prometheus-2.30.3.linux-amd64/prometheus || -f /path/to/node_exporter-1.2.2.linux-amd64/node_exporter ]]; then
+    if [[ -f /etc/grafana/grafana.ini || -f /opt/prometheus/prometheus || -f /opt/node_exporter/node_exporter ]]; then
         uninstall
     else
         echo "Monitoring components not found. Uninstallation is not required."
