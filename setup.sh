@@ -143,7 +143,30 @@ EOL
     fi
 
     echo "Configuring Grafana..."
-    sleep 10  # Wait for Grafana to start
+    echo "Waiting for Grafana to become available..."
+    until curl -s -o /dev/null -w "%{http_code}" http://admin:admin@localhost:3000/api/health | grep -q "200"; do
+        sleep 2
+    done
+
+    echo "Grafana is ready. Configuring Prometheus data source..."
+
+    # Создание источника данных
+    DATASOURCE_JSON='{
+        "name": "Prometheus",
+        "type": "prometheus",
+        "access": "proxy",
+        "url": "http://localhost:9090",
+        "isDefault": true
+    }'
+
+RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" -X POST -H "Content-Type: application/json" -d "$DATASOURCE_JSON" http://admin:admin@localhost:3000/api/datasources)
+
+if [[ "$RESPONSE" == "200" || "$RESPONSE" == "201" ]]; then
+    echo "Prometheus data source created successfully."
+else
+    echo "Failed to create Prometheus data source. Response code: $RESPONSE"
+    exit 1
+fi
 
     # Configure Prometheus data source in Grafana
     echo "Configuring Prometheus data source..."
