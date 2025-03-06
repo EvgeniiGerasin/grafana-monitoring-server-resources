@@ -145,13 +145,9 @@ EOL
     echo "Configuring Grafana..."
     sleep 10  # Wait for Grafana to start
 
-    # Ask the user if they want to import dashboards
-    read -p "Do you want to import dashboards for Grafana? (y/n): " IMPORT_DASHBOARDS
-    if [[ "$IMPORT_DASHBOARDS" == "y" || "$IMPORT_DASHBOARDS" == "Y" ]]; then
-        import_dashboards
-    else
-        echo "Dashboard import skipped."
-    fi
+    # Configure Prometheus data source in Grafana
+    echo "Configuring Prometheus data source..."
+    curl -X POST -H "Content-Type: application/json" -d '{"name":"Prometheus","type":"prometheus","access":"proxy","url":"http://localhost:9090","isDefault":true}' http://admin:admin@localhost:3000/api/datasources
 
     echo "Installation complete!"
     echo "Grafana is available at: http://localhost:3000"
